@@ -34,9 +34,9 @@ class WaypointTool : public rviz_default_plugins::tools::PoseTool
   Q_OBJECT
 public:
   WaypointTool();
-  
+
   ~WaypointTool() override;
-  
+
   virtual void onInitialize() override;
 
 protected:
@@ -51,9 +51,9 @@ private:
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_;
   rclcpp::Publisher<geometry_msgs::msg::PointStamped>::SharedPtr pub_;
   rclcpp::Publisher<sensor_msgs::msg::Joy>::SharedPtr pub_joy_;
-  
+
   rclcpp::Clock::SharedPtr clock_;
-  
+
   rviz_common::properties::StringProperty * topic_property_;
   rviz_common::properties::QosProfileProperty * qos_profile_property_;
 
