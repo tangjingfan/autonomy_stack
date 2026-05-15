@@ -137,5 +137,9 @@ int main(int argc, char** argv)
 
   rclcpp::spin(nh);
 
+  sync_.reset();
+  subLaserCloud.unsubscribe();
+  subOdometry.unsubscribe();
+
   return 0;
 }

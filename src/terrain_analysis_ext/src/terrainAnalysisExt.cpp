@@ -561,7 +561,7 @@ int main(int argc, char** argv)
     }
 
     status = rclcpp::ok();
-    rate.sleep();
+    if (status) rate.sleep();
   }
   
   return 0;

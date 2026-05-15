@@ -22,6 +22,10 @@ Panels:
     Name: Time
     SyncMode: 0
     SyncSource: FreePaths
+  - Class: prob_rviz_plugins/PredictionPanel
+    Name: PredictionPanel
+    confidence_map_topic: /confidence_map
+    predicted_map_topic: /predicted_map
 Visualization Manager:
   Class: ""
   Displays:
@@ -33,7 +37,7 @@ Visualization Manager:
       Reference Frame: vehicle
       Value: true
     - Class: rviz_default_plugins/Image
-      Enabled: true
+      Enabled: false
       Max Value: 1
       Median window: 5
       Min Value: 0
@@ -97,8 +101,8 @@ Visualization Manager:
     - Alpha: 0.10000000149011612
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 0.9582680463790894
-        Min Value: -0.043718695640563965
+        Max Value: 3.755929708480835
+        Min Value: -0.0494956374168396
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -115,7 +119,7 @@ Visualization Manager:
       Name: RegScan
       Position Transformer: XYZ
       Selectable: true
-      Size (Pixels): 2
+      Size (Pixels): 1
       Size (m): 0.05000000074505806
       Style: Points
       Topic:
@@ -234,7 +238,7 @@ Visualization Manager:
       Buffer Length: 1
       Class: rviz_default_plugins/Path
       Color: 25; 255; 0
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -526,7 +530,7 @@ Visualization Manager:
   Global Options:
     Background Color: 0; 0; 0
     Fixed Frame: map
-    Frame Rate: 15
+    Frame Rate: 60
   Name: root
   Tools:
     - Class: rviz_default_plugins/MoveCamera
@@ -559,10 +563,11 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5697963237762451
-      Target Frame: vehicle
-      Value: Orbit (rviz)
-      Yaw: 3.1404049396514893
+      Scale: 9.221428871154785
+      Target Frame: sensor
+      Value: TopDownOrtho (rviz_default_plugins)
+      X: 0
+      Y: 0
     Saved: ~
 Window Geometry:
   DepthImage:

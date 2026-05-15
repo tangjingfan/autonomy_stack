@@ -135,7 +135,7 @@ void odometryHandler(const nav_msgs::msg::Odometry::ConstSharedPtr odom)
   vehicleY = odom->pose.pose.position.y;
   vehicleZ = odom->pose.pose.position.z;
 
-  fprintf(trajFilePtr, "%f %f %f %f %f %f %f\n", vehicleX, vehicleY, vehicleZ, roll, pitch, yaw, timeDuration);
+  if (trajFilePtr != nullptr) fprintf(trajFilePtr, "%f %f %f %f %f %f %f\n", vehicleX, vehicleY, vehicleZ, roll, pitch, yaw, timeDuration);
 
   pcl::PointXYZI point;
   point.x = vehicleX;
@@ -201,7 +201,7 @@ void laserCloudHandler(const sensor_msgs::msg::PointCloud2::ConstSharedPtr laser
     exploredAreaDisplayCount = 0;
   }
 
-  fprintf(metricFilePtr, "%f %f %f %f\n", exploredVolume, travelingDis, runtime, timeDuration);
+  if (metricFilePtr != nullptr) fprintf(metricFilePtr, "%f %f %f %f\n", exploredVolume, travelingDis, runtime, timeDuration);
 
   std_msgs::msg::Float32 exploredVolumeMsg;
   exploredVolumeMsg.data = exploredVolume;
@@ -243,10 +243,6 @@ int main(int argc, char** argv)
   nh->get_parameter("yawInterval", yawInterval);
   nh->get_parameter("overallMapDisplayInterval", overallMapDisplayInterval);
   nh->get_parameter("exploredAreaDisplayInterval", exploredAreaDisplayInterval);
-
-  // No direct replacement present for $(find pkg) in ROS2. Edit file path.
-  metricFile.replace(metricFile.find("/install/"), 8, "/src");
-  trajFile.replace(trajFile.find("/install/"), 8, "/src");
 
   auto subOdometry = nh->create_subscription<nav_msgs::msg::Odometry>("/state_estimation", 5, odometryHandler);
 
@@ -309,8 +305,8 @@ int main(int argc, char** argv)
     rate.sleep();
   }
 
-  fclose(metricFilePtr);
-  fclose(trajFilePtr);
+  if (metricFilePtr != nullptr) fclose(metricFilePtr);
+  if (trajFilePtr != nullptr) fclose(trajFilePtr);
 
   RCLCPP_INFO(nh->get_logger(), "Exploration metrics and vehicle trajectory are saved in 'src/vehicle_simulator/log'.");
 
