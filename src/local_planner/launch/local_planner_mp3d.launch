@@ -13,8 +13,8 @@
 
   <node pkg="local_planner" exec="localPlanner" name="localPlanner" output="screen">
     <param name="pathFolder" value="$(find-pkg-share local_planner)/paths" />
-    <param name="vehicleLength" value="0.6" />
-    <param name="vehicleWidth" value="0.6" />
+    <param name="vehicleLength" value="0.2" />
+    <param name="vehicleWidth" value="0.2" />
     <param name="sensorOffsetX" value="$(var sensorOffsetX)" />
     <param name="sensorOffsetY" value="$(var sensorOffsetY)" />
     <param name="twoWayDrive" value="$(var twoWayDrive)" />
@@ -86,6 +86,7 @@
 
   <node pkg="tf2_ros" exec="static_transform_publisher" name="vehicleTransPublisher" args="-$(var sensorOffsetX) -$(var sensorOffsetY) 0 0 0 0 /sensor /vehicle"/>
 
-  <node pkg="tf2_ros" exec="static_transform_publisher" name="sensorTransPublisher" args="0 0 $(var cameraOffsetZ) -1.5707963 0 -1.5707963 /sensor /rgbd_camera"/>
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="sensorTransPublisher" args="0 0 $(var cameraOffsetZ) -1.5707963 0 -1.5707963 /sensor /camera"/>
 
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="sensorTransPublisher" args="0 0 $(var cameraOffsetZ) -1.5707963 0 -1.5707963 /sensor /rgbd_camera"/>
 </launch>
