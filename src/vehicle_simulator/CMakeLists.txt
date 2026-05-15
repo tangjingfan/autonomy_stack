@@ -56,6 +56,7 @@ install(
   mesh
   rviz
   urdf
+  urdf_mp3d
   world
   DESTINATION share/${PROJECT_NAME}
 )

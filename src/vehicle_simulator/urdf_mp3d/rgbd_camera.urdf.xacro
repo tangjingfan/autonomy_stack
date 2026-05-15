@@ -1,0 +1,58 @@
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="example">
+
+  <link name="rgbd_camera">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+  </link>
+
+  <gazebo reference="rgbd_camera">
+    <sensor type="depth" name="rgbd_camera">
+      <update_rate>30.0</update_rate>
+      <always_on>true</always_on>
+      <camera name="head">
+        <horizontal_fov>2.0</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>360</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.1</near>
+          <far>30.0</far>
+        </clip>
+        <distortion>
+          <k1>0.0</k1>
+          <k2>0.0</k2>
+          <k3>0.0</k3>
+          <p1>0.0</p1>
+          <p2>0.0</p2>
+        </distortion>
+      </camera>
+      <plugin name="rgbd_camera_controller" filename="libgazebo_ros_camera.so">
+          <baseline>0.2</baseline>
+          <camera_name>rgbd_camera</camera_name>
+          <frame_name>rgbd_camera</frame_name>
+          <min_depth>0.1</min_depth>
+          <pointCloudCutoffMax>30.0</pointCloudCutoffMax>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+</robot>
