@@ -67,7 +67,7 @@
         <collision name='collision'>
           <geometry>
             <mesh>
-              <uri>model://matterport/meshes/matterport.dae</uri>
+              <uri>model://matterport/meshes/matterport.obj</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -87,7 +87,7 @@
         <visual name='visual'>
           <geometry>
             <mesh>
-              <uri>model://matterport/meshes/matterport.dae</uri>
+              <uri>model://matterport/meshes/matterport.obj</uri>
             </mesh>
           </geometry>
         </visual>
