@@ -3,11 +3,8 @@
 
   <link name="lidar" />
 
-<!-- TODO fix parameters for matterport scene -->
-
-
   <xacro:include filename="$(find velodyne_description)/urdf/VLP-max.urdf.xacro"/>
-  <xacro:VLP-16 parent="lidar" name="velodyne" topic="/velodyne_points" hz="6.3" lasers="64" samples="720" min_range="0.001" max_range="20" gpu="true">
+  <xacro:VLP-16 parent="lidar" name="velodyne" topic="/velodyne_points" hz="6.3" lasers="64" samples="720" min_range="0.001" max_range="20.0" gpu="true">
     <origin xyz="0 0 0" rpy="0 0 0" />
   </xacro:VLP-16>
 
