@@ -32,12 +32,25 @@ def generate_launch_description():
   
   start_local_planner = IncludeLaunchDescription(
     FrontendLaunchDescriptionSource(os.path.join(
-      get_package_share_directory('local_planner'), 'launch', 'local_planner_mp3d.launch')
+      get_package_share_directory('local_planner'), 'launch', 'local_planner.launch')
     ),
     launch_arguments={
       'cameraOffsetZ': cameraOffsetZ,
       'goalX': vehicleX,
       'goalY': vehicleY,
+      'vehicleLength': '0.1',
+      'vehicleWidth': '0.1',
+      'terrainVoxelSize': '0.1',
+      'useTerrainAnalysis': 'false',
+      'twoWayDrive': 'false',
+      'adjacentRange': '2.0',
+      'obstacleHeightThre': '0.2',
+      'minRelZ': '-0.25',
+      'pathScale': '0.5',
+      'minPathScale': '0.3',
+      'minPathRange': '0.5',
+      'slowDwnDisThre': '0.3',
+      'useRgbdCamera': 'true',
     }.items()
   )
 
@@ -58,7 +71,7 @@ def generate_launch_description():
 
   start_vehicle_simulator = IncludeLaunchDescription(
     PythonLaunchDescriptionSource(os.path.join(
-      get_package_share_directory('vehicle_simulator'), 'launch', 'vehicle_simulator_mp3d.launch')
+      get_package_share_directory('vehicle_simulator'), 'launch', 'vehicle_simulator.launch')
     ),
     launch_arguments={
       'world_name': world_name,
@@ -68,6 +81,11 @@ def generate_launch_description():
       'vehicleY': vehicleY,
       'terrainZ': terrainZ,
       'vehicleYaw': vehicleYaw,
+      'lidar_urdf': 'urdf_mp3d/lidar.urdf.xacro',
+      'robot_urdf': 'urdf_mp3d/robot.sdf',
+      # 'adjustZ': 'false',
+      # 'adjustIncl': 'false',
+      'groundHeightThre': '0.7',
       'gui': gazebo_gui,
     }.items()
   )
@@ -86,12 +104,6 @@ def generate_launch_description():
       'world_name': world_name,
     }.items()
   )
-
-  # start_segmentation_proc = IncludeLaunchDescription(
-  #   FrontendLaunchDescriptionSource(os.path.join(
-  #     get_package_share_directory('segmentation_proc'), 'launch', 'segmentation_proc.launch')
-  #   )
-  # )
 
   start_joy = Node(
     package='joy', 
@@ -140,7 +152,6 @@ def generate_launch_description():
   ld.add_action(start_vehicle_simulator)
   ld.add_action(start_sensor_scan_generation)
   ld.add_action(start_visualization_tools)
-  # ld.add_action(start_segmentation_proc)
   ld.add_action(start_joy)
   ld.add_action(delayed_start_rviz)
 

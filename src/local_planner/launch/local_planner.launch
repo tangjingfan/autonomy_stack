@@ -10,37 +10,49 @@
   <arg name="joyToSpeedDelay" default="2.0"/>
   <arg name="goalX" default="0.0"/>
   <arg name="goalY" default="0.0"/>
+  <arg name="vehicleLength" default="0.6"/>
+  <arg name="vehicleWidth" default="0.6"/>
+  <arg name="terrainVoxelSize" default="0.2"/>
+  <arg name="useTerrainAnalysis" default="true"/>
+  <arg name="adjacentRange" default="4.25"/>
+  <arg name="obstacleHeightThre" default="0.15"/>
+  <arg name="minRelZ" default="-0.5"/>
+  <arg name="pathScale" default="1.0"/>
+  <arg name="minPathScale" default="0.75"/>
+  <arg name="minPathRange" default="1.0"/>
+  <arg name="slowDwnDisThre" default="0.85"/>
+  <arg name="useRgbdCamera" default="false"/>
 
   <node pkg="local_planner" exec="localPlanner" name="localPlanner" output="screen">
     <param name="pathFolder" value="$(find-pkg-share local_planner)/paths" />
-    <param name="vehicleLength" value="0.6" />
-    <param name="vehicleWidth" value="0.6" />
+    <param name="vehicleLength" value="$(var vehicleLength)" />
+    <param name="vehicleWidth" value="$(var vehicleWidth)" />
     <param name="sensorOffsetX" value="$(var sensorOffsetX)" />
     <param name="sensorOffsetY" value="$(var sensorOffsetY)" />
     <param name="twoWayDrive" value="$(var twoWayDrive)" />
     <param name="laserVoxelSize" value="0.05" />
-    <param name="terrainVoxelSize" value="0.2" />
-    <param name="useTerrainAnalysis" value="true" />
+    <param name="terrainVoxelSize" value="$(var terrainVoxelSize)" />
+    <param name="useTerrainAnalysis" value="$(var useTerrainAnalysis)" />
     <param name="checkObstacle" value="true" />
     <param name="checkRotObstacle" value="false" />
-    <param name="adjacentRange" value="4.25" />
-    <param name="obstacleHeightThre" value="0.15" />
+    <param name="adjacentRange" value="$(var adjacentRange)" />
+    <param name="obstacleHeightThre" value="$(var obstacleHeightThre)" />
     <param name="groundHeightThre" value="0.1" />
     <param name="costHeightThre" value="0.1" />
     <param name="costScore" value="0.02" />
     <param name="useCost" value="false" />
     <param name="pointPerPathThre" value="2" />
-    <param name="minRelZ" value="-0.5" />
+    <param name="minRelZ" value="$(var minRelZ)" />
     <param name="maxRelZ" value="0.25" />
     <param name="maxSpeed" value="$(var maxSpeed)" />
     <param name="dirWeight" value="0.02" />
     <param name="dirThre" value="90.0" />
     <param name="dirToVehicle" value="false" />
-    <param name="pathScale" value="1.0" />
-    <param name="minPathScale" value="0.75" />
+    <param name="pathScale" value="$(var pathScale)" />
+    <param name="minPathScale" value="$(var minPathScale)" />
     <param name="pathScaleStep" value="0.25" />
     <param name="pathScaleBySpeed" value="true" />
-    <param name="minPathRange" value="1.0" />
+    <param name="minPathRange" value="$(var minPathRange)" />
     <param name="pathRangeStep" value="0.5" />
     <param name="pathRangeBySpeed" value="true" />
     <param name="pathCropByGoal" value="true" />
@@ -67,7 +79,7 @@
     <param name="switchTimeThre" value="1.0" />
     <param name="dirDiffThre" value="0.1" />
     <param name="stopDisThre" value="0.2" />
-    <param name="slowDwnDisThre" value="0.85" />
+    <param name="slowDwnDisThre" value="$(var slowDwnDisThre)" />
     <param name="useInclRateToSlow" value="false" />
     <param name="inclRateThre" value="120.0" />
     <param name="slowRate1" value="0.25" />
@@ -87,5 +99,7 @@
   <node pkg="tf2_ros" exec="static_transform_publisher" name="vehicleTransPublisher" args="-$(var sensorOffsetX) -$(var sensorOffsetY) 0 0 0 0 /sensor /vehicle"/>
 
   <node pkg="tf2_ros" exec="static_transform_publisher" name="sensorTransPublisher" args="0 0 $(var cameraOffsetZ) -1.5707963 0 -1.5707963 /sensor /camera"/>
+
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="rgbdCameraTransPublisher" if="$(var useRgbdCamera)" args="0 0 $(var cameraOffsetZ) -1.5707963 0 -1.5707963 /sensor /rgbd_camera"/>
 
 </launch>
