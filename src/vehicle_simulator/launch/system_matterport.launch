@@ -41,16 +41,16 @@ def generate_launch_description():
       'vehicleLength': '0.1',
       'vehicleWidth': '0.1',
       'terrainVoxelSize': '0.1',
-      'useTerrainAnalysis': 'false',
+      'useTerrainAnalysis': 'true',
       'twoWayDrive': 'false',
       'adjacentRange': '2.0',
-      'obstacleHeightThre': '0.2',
+      'obstacleHeightThre': '0.65',
       'minRelZ': '-0.25',
       'pathScale': '0.5',
       'minPathScale': '0.3',
       'minPathRange': '0.5',
       'slowDwnDisThre': '0.3',
-      'useRgbdCamera': 'true',
+      'useRgbdCamera': 'false',
     }.items()
   )
 
@@ -83,9 +83,9 @@ def generate_launch_description():
       'vehicleYaw': vehicleYaw,
       'lidar_urdf': 'urdf_mp3d/lidar.urdf.xacro',
       'robot_urdf': 'urdf_mp3d/robot.sdf',
-      # 'adjustZ': 'false',
-      # 'adjustIncl': 'false',
-      'groundHeightThre': '0.7',
+      'adjustZ': 'false',
+      'adjustIncl': 'false',
+      'groundHeightThre': '0.25',
       'gui': gazebo_gui,
     }.items()
   )
