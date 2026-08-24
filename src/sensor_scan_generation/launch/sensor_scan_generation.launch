@@ -1,5 +1,11 @@
 <launch>
 
-  <node pkg="sensor_scan_generation" exec="sensorScanGeneration" name="sensorScanGeneration" output="screen"/>
+  <arg name="map_frame" default="map"/>
+  <arg name="sensor_at_scan_frame" default="sensor_at_scan"/>
+
+  <node pkg="sensor_scan_generation" exec="sensorScanGeneration" name="sensorScanGeneration" output="screen">
+    <param name="mapFrame" value="$(var map_frame)"/>
+    <param name="sensorAtScanFrame" value="$(var sensor_at_scan_frame)"/>
+  </node>
 
 </launch>

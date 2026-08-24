@@ -1,10 +1,15 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="example">
 
-  <link name="lidar" />
+  <xacro:arg name="scan_topic" default="/velodyne_points"/>
+  <xacro:arg name="tf_prefix" default=""/>
+  <xacro:arg name="sensor_name" default="velodyne"/>
+  <xacro:arg name="parent_link" default="lidar"/>
+
+  <link name="$(arg parent_link)" />
 
   <xacro:include filename="$(find velodyne_description)/urdf/VLP-16.urdf.xacro"/>
-  <xacro:VLP-16 parent="lidar" name="velodyne" topic="/velodyne_points" hz="6.3" samples="350" min_range="0.1" max_range="40.0">
+  <xacro:VLP-16 parent="$(arg parent_link)" name="$(arg sensor_name)" topic="$(arg scan_topic)" tf_prefix="$(arg tf_prefix)" hz="6.3" samples="350" min_range="0.1" max_range="40.0">
     <origin xyz="0 0 0" rpy="0 0 0" />
   </xacro:VLP-16>
 

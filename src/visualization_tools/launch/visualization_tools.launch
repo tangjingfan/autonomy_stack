@@ -1,8 +1,12 @@
 <launch>
 
   <arg name="world_name" default="garage"/>
+  <arg name="odom_topic" default="/robot_0/state_estimation"/>
+  <arg name="scan_topic" default="/robot_0/registered_scan"/>
 
   <node pkg="visualization_tools" exec="visualizationTools" name="visualizationTools" output="screen">
+    <remap from="state_estimation" to="$(var odom_topic)"/>
+    <remap from="registered_scan" to="$(var scan_topic)"/>
     <param name="metricFile" value="$(find-pkg-share vehicle_simulator)/log/metrics" />
     <param name="trajFile" value="$(find-pkg-share vehicle_simulator)/log/trajectory" />
     <param name="mapFile" value="$(find-pkg-share vehicle_simulator)/mesh/$(var world_name)/preview/pointcloud.ply" />

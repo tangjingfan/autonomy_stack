@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <chrono>
+#include <string>
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/time.hpp"
@@ -38,6 +39,7 @@ using namespace std;
 
 const double PI = 3.1415926;
 
+std::string vehicleFrame = "vehicle";
 double sensorOffsetX = 0;
 double sensorOffsetY = 0;
 int pubSkipNum = 1;
@@ -217,6 +219,7 @@ int main(int argc, char** argv)
   nh->declare_parameter<bool>("autonomyMode", autonomyMode);
   nh->declare_parameter<double>("autonomySpeed", autonomySpeed);
   nh->declare_parameter<double>("joyToSpeedDelay", joyToSpeedDelay);
+  nh->declare_parameter<std::string>("vehicleFrame", vehicleFrame);
 
   nh->get_parameter("sensorOffsetX", sensorOffsetX);
   nh->get_parameter("sensorOffsetY", sensorOffsetY);
@@ -246,21 +249,22 @@ int main(int argc, char** argv)
   nh->get_parameter("autonomyMode", autonomyMode);
   nh->get_parameter("autonomySpeed", autonomySpeed);
   nh->get_parameter("joyToSpeedDelay", joyToSpeedDelay);
+  nh->get_parameter("vehicleFrame", vehicleFrame);
 
-  auto subOdom = nh->create_subscription<nav_msgs::msg::Odometry>("/state_estimation", 5, odomHandler);
+  auto subOdom = nh->create_subscription<nav_msgs::msg::Odometry>("state_estimation", 5, odomHandler);
 
-  auto subPath = nh->create_subscription<nav_msgs::msg::Path>("/path", 5, pathHandler);
+  auto subPath = nh->create_subscription<nav_msgs::msg::Path>("path", 5, pathHandler);
 
   auto subJoystick = nh->create_subscription<sensor_msgs::msg::Joy>("/joy", 5, joystickHandler);
 
-  auto subSpeed = nh->create_subscription<std_msgs::msg::Float32>("/speed", 5, speedHandler);
+  auto subSpeed = nh->create_subscription<std_msgs::msg::Float32>("speed", 5, speedHandler);
 
-  auto subStop = nh->create_subscription<std_msgs::msg::Int8>("/stop", 5, stopHandler);
+  auto subStop = nh->create_subscription<std_msgs::msg::Int8>("stop", 5, stopHandler);
 
-  auto pubSpeed = nh->create_publisher<geometry_msgs::msg::TwistStamped>("/cmd_vel", 5);
+  auto pubSpeed = nh->create_publisher<geometry_msgs::msg::TwistStamped>("cmd_vel", 5);
 
   geometry_msgs::msg::TwistStamped cmd_vel;
-  cmd_vel.header.frame_id = "vehicle";
+  cmd_vel.header.frame_id = vehicleFrame;
 
   if (autonomyMode) {
     joySpeed = autonomySpeed / maxSpeed;

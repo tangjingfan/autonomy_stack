@@ -22,6 +22,9 @@
   <arg name="minPathRange" default="1.0"/>
   <arg name="slowDwnDisThre" default="0.85"/>
   <arg name="useRgbdCamera" default="false"/>
+  <arg name="sensor_frame" default="sensor"/>
+  <arg name="vehicle_frame" default="vehicle"/>
+  <arg name="camera_frame" default="camera"/>
 
   <node pkg="local_planner" exec="localPlanner" name="localPlanner" output="screen">
     <param name="pathFolder" value="$(find-pkg-share local_planner)/paths" />
@@ -63,6 +66,7 @@
     <param name="goalClearRange" value="0.5" />
     <param name="goalX" value="$(var goalX)" />
     <param name="goalY" value="$(var goalY)" />
+    <param name="vehicleFrame" value="$(var vehicle_frame)" />
   </node>
 
   <node pkg="local_planner" exec="pathFollower" name="pathFollower" output="screen">
@@ -94,12 +98,13 @@
     <param name="autonomyMode" value="$(var autonomyMode)" />
     <param name="autonomySpeed" value="$(var autonomySpeed)" />
     <param name="joyToSpeedDelay" value="$(var joyToSpeedDelay)" />
+    <param name="vehicleFrame" value="$(var vehicle_frame)" />
   </node>
 
-  <node pkg="tf2_ros" exec="static_transform_publisher" name="vehicleTransPublisher" args="-$(var sensorOffsetX) -$(var sensorOffsetY) 0 0 0 0 /sensor /vehicle"/>
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="vehicleTransPublisher" args="-$(var sensorOffsetX) -$(var sensorOffsetY) 0 0 0 0 $(var sensor_frame) $(var vehicle_frame)"/>
 
-  <node pkg="tf2_ros" exec="static_transform_publisher" name="sensorTransPublisher" args="0 0 $(var cameraOffsetZ) -1.5707963 0 -1.5707963 /sensor /camera"/>
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="sensorTransPublisher" args="0 0 $(var cameraOffsetZ) -1.5707963 0 -1.5707963 $(var sensor_frame) $(var camera_frame)"/>
 
-  <node pkg="tf2_ros" exec="static_transform_publisher" name="rgbdCameraTransPublisher" if="$(var useRgbdCamera)" args="0 0 $(var cameraOffsetZ) -1.5707963 0 -1.5707963 /sensor /rgbd_camera"/>
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="rgbdCameraTransPublisher" if="$(var useRgbdCamera)" args="0 0 $(var cameraOffsetZ) -1.5707963 0 -1.5707963 $(var sensor_frame) $(var sensor_frame)_rgbd_camera"/>
 
 </launch>

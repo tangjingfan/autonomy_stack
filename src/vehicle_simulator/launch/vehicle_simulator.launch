@@ -2,15 +2,24 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction, TimerAction
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction, RegisterEventHandler, TimerAction
+from launch.conditions import IfCondition
+from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch_ros.actions import Node
 from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
+from launch_ros.actions import Node
+
 
 def declare_world_action(context, world_name):
   world_name_str = str(world_name.perform(context))
-  declare_world = DeclareLaunchArgument('world', default_value=[os.path.join(get_package_share_directory('vehicle_simulator'), 'world', world_name_str + '.world')], description='')
+  declare_world = DeclareLaunchArgument(
+      'world',
+      default_value=[os.path.join(
+          get_package_share_directory('vehicle_simulator'),
+          'world', world_name_str + '.world')],
+      description='')
   return [declare_world]
+
 
 def generate_launch_description():
   sensorOffsetX = LaunchConfiguration('sensorOffsetX')
@@ -42,43 +51,74 @@ def generate_launch_description():
   record = LaunchConfiguration('record')
   verbose = LaunchConfiguration('verbose')
   world_name = LaunchConfiguration('world_name')
+  start_gazebo = LaunchConfiguration('start_gazebo')
+  robot_model_name = LaunchConfiguration('robot_model_name')
+  lidar_model_name = LaunchConfiguration('lidar_model_name')
+  camera_model_name = LaunchConfiguration('camera_model_name')
+  mapFrame = LaunchConfiguration('mapFrame')
+  sensorFrame = LaunchConfiguration('sensorFrame')
+  scan_topic = LaunchConfiguration('scan_topic')
+  tf_prefix = LaunchConfiguration('tf_prefix')
+  sensor_name = LaunchConfiguration('sensor_name')
+  parent_link = LaunchConfiguration('parent_link')
 
-  declare_sensorOffsetX = DeclareLaunchArgument('sensorOffsetX', default_value='0.0', description='')
-  declare_sensorOffsetY = DeclareLaunchArgument('sensorOffsetY', default_value='0.0', description='')
-  declare_vehicleHeight = DeclareLaunchArgument('vehicleHeight', default_value='0.75', description='')
-  declare_cameraOffsetZ = DeclareLaunchArgument('cameraOffsetZ', default_value='0.0', description='')
-  declare_vehicleX = DeclareLaunchArgument('vehicleX', default_value='0.0', description='')
-  declare_vehicleY = DeclareLaunchArgument('vehicleY', default_value='0.0', description='')
-  declare_vehicleZ = DeclareLaunchArgument('vehicleZ', default_value='0.0', description='')
-  declare_terrainZ = DeclareLaunchArgument('terrainZ', default_value='0.0', description='')
-  declare_vehicleYaw = DeclareLaunchArgument('vehicleYaw', default_value='0.0', description='')
-  declare_terrainVoxelSize = DeclareLaunchArgument('terrainVoxelSize', default_value='0.05', description='')
-  declare_groundHeightThre = DeclareLaunchArgument('groundHeightThre', default_value='0.1', description='')
-  declare_adjustZ = DeclareLaunchArgument('adjustZ', default_value='true', description='')
-  declare_terrainRadiusZ = DeclareLaunchArgument('terrainRadiusZ', default_value='1.0', description='')
-  declare_minTerrainPointNumZ = DeclareLaunchArgument('minTerrainPointNumZ', default_value='5', description='')
-  declare_smoothRateZ = DeclareLaunchArgument('smoothRateZ', default_value='0.5', description='')
-  declare_adjustIncl = DeclareLaunchArgument('adjustIncl', default_value='true', description='')
-  declare_terrainRadiusIncl = DeclareLaunchArgument('terrainRadiusIncl', default_value='2.0', description='')
-  declare_minTerrainPointNumIncl = DeclareLaunchArgument('minTerrainPointNumIncl', default_value='200', description='')
-  declare_smoothRateIncl = DeclareLaunchArgument('smoothRateIncl', default_value='0.5', description='')
-  declare_InclFittingThre = DeclareLaunchArgument('InclFittingThre', default_value='0.2', description='')
-  declare_maxIncl = DeclareLaunchArgument('maxIncl', default_value='30.0', description='')
-  declare_lidar_urdf = DeclareLaunchArgument('lidar_urdf', default_value='urdf/lidar.urdf.xacro', description='LiDAR URDF xacro path relative to vehicle_simulator share')
-  declare_robot_urdf = DeclareLaunchArgument('robot_urdf', default_value='urdf/robot.sdf', description='Robot SDF path relative to vehicle_simulator share')
-  declare_pause = DeclareLaunchArgument('pause', default_value='false', description='')
-  declare_use_sim_time = DeclareLaunchArgument('use_sim_time', default_value='false', description='')
-  declare_gui = DeclareLaunchArgument('gui', default_value='false', description='')
-  declare_record = DeclareLaunchArgument('record', default_value='false', description='')
-  declare_verbose = DeclareLaunchArgument('verbose', default_value='false', description='')
-  declare_world_name = DeclareLaunchArgument('world_name', default_value='garage', description='')
-  
-  lidar_xacro = PathJoinSubstitution([get_package_share_directory('vehicle_simulator'), lidar_urdf])
-  lidar_description = Command(['xacro ', lidar_xacro])
+  declares = [
+    DeclareLaunchArgument('sensorOffsetX', default_value='0.0'),
+    DeclareLaunchArgument('sensorOffsetY', default_value='0.0'),
+    DeclareLaunchArgument('vehicleHeight', default_value='0.75'),
+    DeclareLaunchArgument('cameraOffsetZ', default_value='0.0'),
+    DeclareLaunchArgument('vehicleX', default_value='0.0'),
+    DeclareLaunchArgument('vehicleY', default_value='0.0'),
+    DeclareLaunchArgument('vehicleZ', default_value='0.0'),
+    DeclareLaunchArgument('terrainZ', default_value='0.0'),
+    DeclareLaunchArgument('vehicleYaw', default_value='0.0'),
+    DeclareLaunchArgument('terrainVoxelSize', default_value='0.05'),
+    DeclareLaunchArgument('groundHeightThre', default_value='0.1'),
+    DeclareLaunchArgument('adjustZ', default_value='true'),
+    DeclareLaunchArgument('terrainRadiusZ', default_value='1.0'),
+    DeclareLaunchArgument('minTerrainPointNumZ', default_value='5'),
+    DeclareLaunchArgument('smoothRateZ', default_value='0.5'),
+    DeclareLaunchArgument('adjustIncl', default_value='true'),
+    DeclareLaunchArgument('terrainRadiusIncl', default_value='2.0'),
+    DeclareLaunchArgument('minTerrainPointNumIncl', default_value='200'),
+    DeclareLaunchArgument('smoothRateIncl', default_value='0.5'),
+    DeclareLaunchArgument('InclFittingThre', default_value='0.2'),
+    DeclareLaunchArgument('maxIncl', default_value='30.0'),
+    DeclareLaunchArgument('lidar_urdf', default_value='urdf/lidar.urdf.xacro'),
+    DeclareLaunchArgument('robot_urdf', default_value='urdf/robot.sdf'),
+    DeclareLaunchArgument('pause', default_value='false'),
+    DeclareLaunchArgument('use_sim_time', default_value='false'),
+    DeclareLaunchArgument('gui', default_value='false'),
+    DeclareLaunchArgument('record', default_value='false'),
+    DeclareLaunchArgument('verbose', default_value='false'),
+    DeclareLaunchArgument('world_name', default_value='garage'),
+    DeclareLaunchArgument('start_gazebo', default_value='true'),
+    DeclareLaunchArgument('robot_model_name', default_value='robot'),
+    DeclareLaunchArgument('lidar_model_name', default_value='lidar'),
+    DeclareLaunchArgument('camera_model_name', default_value='camera'),
+    DeclareLaunchArgument('mapFrame', default_value='map'),
+    DeclareLaunchArgument('sensorFrame', default_value='sensor'),
+    DeclareLaunchArgument('scan_topic', default_value='/velodyne_points'),
+    DeclareLaunchArgument('tf_prefix', default_value=''),
+    DeclareLaunchArgument('sensor_name', default_value='velodyne'),
+    DeclareLaunchArgument('parent_link', default_value='lidar'),
+    DeclareLaunchArgument('robot_ns', default_value=''),
+    DeclareLaunchArgument('camera_frame', default_value='camera'),
+  ]
+
+  lidar_xacro = PathJoinSubstitution([
+      get_package_share_directory('vehicle_simulator'), lidar_urdf])
+  lidar_description = Command([
+      'xacro ', lidar_xacro,
+      ' scan_topic:=', scan_topic,
+      ' tf_prefix:=', tf_prefix,
+      ' sensor_name:=', sensor_name,
+      ' parent_link:=', parent_link,
+  ])
   start_lidar_state_publisher = Node(
     package='robot_state_publisher',
     executable='robot_state_publisher',
-    name='robot_state_publisher',
+    name='lidar_state_publisher',
     output='screen',
     parameters=[{
       'use_sim_time': use_sim_time,
@@ -86,122 +126,144 @@ def generate_launch_description():
     }]
   )
 
-  spawn_lidar = Node(
-    package='gazebo_ros', 
-    executable='spawn_entity.py',
-    arguments=[
-      '-entity', 'lidar',
-      '-topic', 'robot_description',
-    ],
-    output='screen',
-  )
-
-  robot_xacro = PathJoinSubstitution([get_package_share_directory('vehicle_simulator'), robot_urdf])
-  spawn_robot = Node(
-    package='gazebo_ros', 
-    executable='spawn_entity.py',
-    arguments=[
-      '-file', robot_xacro,
-      '-entity', 'robot'
-    ],
-    output='screen',
-  )
-
-  camera_xacro = os.path.join(get_package_share_directory('vehicle_simulator'), 'urdf', 'camera.urdf.xacro')
-  spawn_camera = Node(
-    package='gazebo_ros', 
-    executable='spawn_entity.py',
-    arguments=[
-      '-file', camera_xacro,
-      '-entity', 'camera'
-      ],
-      output='screen'
-  )
-
-  start_gazebo = IncludeLaunchDescription(
+  start_gazebo_include = IncludeLaunchDescription(
     PythonLaunchDescriptionSource(os.path.join(
-      get_package_share_directory('gazebo_ros'), 'launch', 'gazebo.launch.py'))
-  )
-
-  start_vehicle_simulator = Node(
-    package='vehicle_simulator', 
-    executable='vehicleSimulator',
-    parameters=[
-      {
-        'use_gazebo_time': False,
-        'sensorOffsetX': sensorOffsetX,
-        'sensorOffsetY': sensorOffsetY,
-        'vehicleHeight': vehicleHeight,
-        'cameraOffsetZ': cameraOffsetZ,
-        'vehicleX': vehicleX,
-        'vehicleY': vehicleY,
-        'vehicleZ': vehicleZ,
-        'terrainZ': terrainZ,
-        'vehicleYaw': vehicleYaw,
-        'terrainVoxelSize': terrainVoxelSize,
-        'groundHeightThre': groundHeightThre,
-        'adjustZ': adjustZ,
-        'terrainRadiusZ': terrainRadiusZ,
-        'minTerrainPointNumZ': minTerrainPointNumZ,
-        'smoothRateZ': smoothRateZ,
-        'adjustIncl': adjustIncl,
-        'terrainRadiusIncl': terrainRadiusIncl,
-        'minTerrainPointNumIncl': minTerrainPointNumIncl,
-        'smoothRateIncl': smoothRateIncl,
-        'InclFittingThre': InclFittingThre,
-        'maxIncl': maxIncl,
-        'use_sim_time': use_sim_time
-      }
-      ],
-      output='screen'
-  )
-
-  delayed_start_vehicle_simulator = TimerAction(
-    period=5.0,
-    actions=[
-      start_vehicle_simulator
-    ]
+      get_package_share_directory('gazebo_ros'), 'launch', 'gazebo.launch.py')),
+    condition=IfCondition(start_gazebo),
   )
 
   ld = LaunchDescription()
-
-  # Add the actions
-  ld.add_action(declare_sensorOffsetX)
-  ld.add_action(declare_sensorOffsetY)
-  ld.add_action(declare_vehicleHeight)
-  ld.add_action(declare_cameraOffsetZ)
-  ld.add_action(declare_vehicleX)
-  ld.add_action(declare_vehicleY)
-  ld.add_action(declare_vehicleZ)
-  ld.add_action(declare_terrainZ)
-  ld.add_action(declare_vehicleYaw)
-  ld.add_action(declare_terrainVoxelSize)
-  ld.add_action(declare_groundHeightThre)
-  ld.add_action(declare_adjustZ)
-  ld.add_action(declare_terrainRadiusZ)
-  ld.add_action(declare_minTerrainPointNumZ)
-  ld.add_action(declare_smoothRateZ)
-  ld.add_action(declare_adjustIncl)
-  ld.add_action(declare_terrainRadiusIncl)
-  ld.add_action(declare_minTerrainPointNumIncl)
-  ld.add_action(declare_smoothRateIncl)
-  ld.add_action(declare_InclFittingThre)
-  ld.add_action(declare_maxIncl)
-  ld.add_action(declare_lidar_urdf)
-  ld.add_action(declare_robot_urdf)
-  ld.add_action(declare_pause)
-  ld.add_action(declare_use_sim_time)
-  ld.add_action(declare_gui)
-  ld.add_action(declare_record)
-  ld.add_action(declare_verbose)
-  ld.add_action(declare_world_name)
+  for item in declares:
+    ld.add_action(item)
   ld.add_action(OpaqueFunction(function=declare_world_action, args=[world_name]))
-
-  ld.add_action(start_gazebo)
+  ld.add_action(start_gazebo_include)
   ld.add_action(start_lidar_state_publisher)
-  ld.add_action(spawn_lidar)
-  ld.add_action(spawn_robot)
-  ld.add_action(spawn_camera)
-  ld.add_action(delayed_start_vehicle_simulator)
-
+  # TimerAction cannot substitute LaunchConfiguration from an included
+  # launch file; resolve names here then delay the already-built nodes.
+  ld.add_action(OpaqueFunction(function=schedule_delayed_nodes))
   return ld
+
+
+def _cfg(context, name):
+  return LaunchConfiguration(name).perform(context)
+
+
+def _cfg_float(context, name):
+  return float(_cfg(context, name))
+
+
+def _cfg_bool(context, name):
+  return _cfg(context, name).lower() in ('true', '1', 'yes')
+
+
+def schedule_delayed_nodes(context, *args, **kwargs):
+  import subprocess
+  import tempfile
+
+  pkg_share = get_package_share_directory('vehicle_simulator')
+  ns = _cfg(context, 'robot_ns')
+  lidar_name = _cfg(context, 'lidar_model_name')
+  robot_name = _cfg(context, 'robot_model_name')
+  camera_name = _cfg(context, 'camera_model_name')
+  robot_file = os.path.join(pkg_share, _cfg(context, 'robot_urdf'))
+  camera_xacro = os.path.join(pkg_share, 'urdf', 'camera.urdf.xacro')
+  lidar_xacro = os.path.join(pkg_share, _cfg(context, 'lidar_urdf'))
+  lidar_urdf = os.path.join(
+      tempfile.gettempdir(), f'{lidar_name.replace("/", "_")}.urdf')
+  camera_urdf = os.path.join(
+      tempfile.gettempdir(), f'{camera_name.replace("/", "_")}.urdf')
+  ros_ns = f'/{ns}' if ns else ''
+  subprocess.check_call([
+      'xacro', lidar_xacro,
+      f'scan_topic:={_cfg(context, "scan_topic")}',
+      f'tf_prefix:={_cfg(context, "tf_prefix")}',
+      f'sensor_name:={_cfg(context, "sensor_name")}',
+      f'parent_link:={_cfg(context, "parent_link")}',
+      '-o', lidar_urdf,
+  ])
+  subprocess.check_call([
+      'xacro', camera_xacro,
+      f'name:={camera_name}',
+      f'ros_namespace:={ros_ns}',
+      f'frame_name:={_cfg(context, "camera_frame")}',
+      '-o', camera_urdf,
+  ])
+
+  spawn_timeout = '300'
+  spawn_lidar = Node(
+    package='gazebo_ros',
+    executable='spawn_entity.py',
+    name='spawn_lidar',
+    arguments=[
+      '-entity', lidar_name,
+      '-file', lidar_urdf,
+      '-timeout', spawn_timeout,
+    ],
+    output='screen',
+  )
+  spawn_robot = Node(
+    package='gazebo_ros',
+    executable='spawn_entity.py',
+    name='spawn_robot',
+    arguments=[
+      '-file', robot_file,
+      '-entity', robot_name,
+      '-timeout', spawn_timeout,
+    ],
+    output='screen',
+  )
+  spawn_camera = Node(
+    package='gazebo_ros',
+    executable='spawn_entity.py',
+    name='spawn_camera',
+    arguments=[
+      '-file', camera_urdf,
+      '-entity', camera_name,
+      '-timeout', spawn_timeout,
+    ],
+    output='screen',
+  )
+  start_vehicle_simulator = Node(
+    package='vehicle_simulator',
+    executable='vehicleSimulator',
+    namespace=ns,
+    parameters=[{
+      'use_gazebo_time': False,
+      'sensorOffsetX': _cfg_float(context, 'sensorOffsetX'),
+      'sensorOffsetY': _cfg_float(context, 'sensorOffsetY'),
+      'vehicleHeight': _cfg_float(context, 'vehicleHeight'),
+      'cameraOffsetZ': _cfg_float(context, 'cameraOffsetZ'),
+      'vehicleX': _cfg_float(context, 'vehicleX'),
+      'vehicleY': _cfg_float(context, 'vehicleY'),
+      'vehicleZ': _cfg_float(context, 'vehicleZ'),
+      'terrainZ': _cfg_float(context, 'terrainZ'),
+      'vehicleYaw': _cfg_float(context, 'vehicleYaw'),
+      'terrainVoxelSize': _cfg_float(context, 'terrainVoxelSize'),
+      'groundHeightThre': _cfg_float(context, 'groundHeightThre'),
+      'adjustZ': _cfg_bool(context, 'adjustZ'),
+      'terrainRadiusZ': _cfg_float(context, 'terrainRadiusZ'),
+      'minTerrainPointNumZ': int(_cfg_float(context, 'minTerrainPointNumZ')),
+      'smoothRateZ': _cfg_float(context, 'smoothRateZ'),
+      'adjustIncl': _cfg_bool(context, 'adjustIncl'),
+      'terrainRadiusIncl': _cfg_float(context, 'terrainRadiusIncl'),
+      'minTerrainPointNumIncl': int(_cfg_float(context, 'minTerrainPointNumIncl')),
+      'smoothRateIncl': _cfg_float(context, 'smoothRateIncl'),
+      'InclFittingThre': _cfg_float(context, 'InclFittingThre'),
+      'maxIncl': _cfg_float(context, 'maxIncl'),
+      'use_sim_time': _cfg_bool(context, 'use_sim_time'),
+      'mapFrame': _cfg(context, 'mapFrame'),
+      'sensorFrame': _cfg(context, 'sensorFrame'),
+      'robotModelName': robot_name,
+      'lidarModelName': lidar_name,
+      'cameraModelName': camera_name,
+    }],
+    output='screen',
+  )
+  return [
+    spawn_lidar,
+    spawn_robot,
+    spawn_camera,
+    RegisterEventHandler(
+      OnProcessExit(target_action=spawn_robot, on_exit=[start_vehicle_simulator]),
+    ),
+  ]

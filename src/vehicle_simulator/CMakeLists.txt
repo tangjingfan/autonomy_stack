@@ -61,6 +61,8 @@ install(
   DESTINATION share/${PROJECT_NAME}
 )
 
+ament_environment_hooks("${CMAKE_CURRENT_SOURCE_DIR}/env-hooks/vehicle_simulator.dsv.in")
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()

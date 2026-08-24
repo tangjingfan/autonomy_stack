@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <chrono>
 #include <iostream>
+#include <string>
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/time.hpp"
 #include "rclcpp/clock.hpp"
@@ -64,6 +65,11 @@ int minTerrainPointNumIncl = 500;
 double smoothRateIncl = 0.2;
 double InclFittingThre = 0.2;
 double maxIncl = 30.0;
+std::string mapFrame = "map";
+std::string sensorFrame = "sensor";
+std::string robotModelName = "robot";
+std::string lidarModelName = "lidar";
+std::string cameraModelName = "camera";
 
 const int systemDelay = 5;
 int systemInitCount = 0;
@@ -180,7 +186,7 @@ void scanHandler(const sensor_msgs::msg::PointCloud2::ConstSharedPtr scanIn)
   sensor_msgs::msg::PointCloud2 scanData2;
   pcl::toROSMsg(*scanData, scanData2);
   scanData2.header.stamp = rclcpp::Time(static_cast<uint64_t>(odomRecTime * 1e9));
-  scanData2.header.frame_id = "map";
+  scanData2.header.frame_id = mapFrame;
   pubScanPointer->publish(scanData2);
 }
 
@@ -353,33 +359,44 @@ int main(int argc, char** argv)
   nh->get_parameter("InclFittingThre", InclFittingThre);
   nh->get_parameter("maxIncl", maxIncl);
 
-  auto subScan = nh->create_subscription<sensor_msgs::msg::PointCloud2>("/velodyne_points", 2, scanHandler);
+  nh->declare_parameter<std::string>("mapFrame", mapFrame);
+  nh->declare_parameter<std::string>("sensorFrame", sensorFrame);
+  nh->declare_parameter<std::string>("robotModelName", robotModelName);
+  nh->declare_parameter<std::string>("lidarModelName", lidarModelName);
+  nh->declare_parameter<std::string>("cameraModelName", cameraModelName);
+  nh->get_parameter("mapFrame", mapFrame);
+  nh->get_parameter("sensorFrame", sensorFrame);
+  nh->get_parameter("robotModelName", robotModelName);
+  nh->get_parameter("lidarModelName", lidarModelName);
+  nh->get_parameter("cameraModelName", cameraModelName);
 
-  auto subTerrainCloud = nh->create_subscription<sensor_msgs::msg::PointCloud2>("/terrain_map", 2, terrainCloudHandler);
+  auto subScan = nh->create_subscription<sensor_msgs::msg::PointCloud2>("velodyne_points", 2, scanHandler);
 
-  auto subSpeed = nh->create_subscription<geometry_msgs::msg::TwistStamped>("/cmd_vel", 5, speedHandler);
+  auto subTerrainCloud = nh->create_subscription<sensor_msgs::msg::PointCloud2>("terrain_map", 2, terrainCloudHandler);
 
-  auto pubVehicleOdom = nh->create_publisher<nav_msgs::msg::Odometry>("/state_estimation", 5);
+  auto subSpeed = nh->create_subscription<geometry_msgs::msg::TwistStamped>("cmd_vel", 5, speedHandler);
+
+  auto pubVehicleOdom = nh->create_publisher<nav_msgs::msg::Odometry>("state_estimation", 5);
   nav_msgs::msg::Odometry odomData;
-  odomData.header.frame_id = "map";
-  odomData.child_frame_id = "sensor";
+  odomData.header.frame_id = mapFrame;
+  odomData.child_frame_id = sensorFrame;
 
   auto tfBroadcaster = std::make_unique<tf2_ros::TransformBroadcaster>(*nh);
   tf2::Stamped<tf2::Transform> odomTrans;
   geometry_msgs::msg::TransformStamped transformTfGeom ; 
-  odomTrans.frame_id_ = "map";
+  odomTrans.frame_id_ = mapFrame;
 
   gazebo_msgs::msg::EntityState cameraState;
-  cameraState.name = "camera";
+  cameraState.name = cameraModelName;
   gazebo_msgs::msg::EntityState lidarState;
-  lidarState.name = "lidar";
+  lidarState.name = lidarModelName;
   gazebo_msgs::msg::EntityState robotState;
-  robotState.name = "robot";
+  robotState.name = robotModelName;
 
   rclcpp::Client<gazebo_msgs::srv::SetEntityState>::SharedPtr client = nh->create_client<gazebo_msgs::srv::SetEntityState>("/set_entity_state");
   auto request  = std::make_shared<gazebo_msgs::srv::SetEntityState::Request>();
 
-  pubScanPointer = nh->create_publisher<sensor_msgs::msg::PointCloud2>("/registered_scan", 2);
+  pubScanPointer = nh->create_publisher<sensor_msgs::msg::PointCloud2>("registered_scan", 2);
 
   terrainDwzFilter.setLeafSize(terrainVoxelSize, terrainVoxelSize, terrainVoxelSize);
 
@@ -443,7 +460,7 @@ int main(int argc, char** argv)
     odomTrans.setRotation(tf2::Quaternion(geoQuat.x, geoQuat.y, geoQuat.z, geoQuat.w));
     odomTrans.setOrigin(tf2::Vector3(vehicleX, vehicleY, vehicleZ));
     transformTfGeom = tf2::toMsg(odomTrans);
-    transformTfGeom.child_frame_id = "sensor";
+    transformTfGeom.child_frame_id = sensorFrame;
     transformTfGeom.header.stamp = odomTime;
     tfBroadcaster->sendTransform(transformTfGeom);
 

@@ -1,6 +1,11 @@
+<?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="example">
 
-  <link name="camera">
+  <xacro:arg name="name" default="camera"/>
+  <xacro:arg name="ros_namespace" default=""/>
+  <xacro:arg name="frame_name" default="camera"/>
+
+  <link name="$(arg name)">
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
@@ -22,8 +27,8 @@
     </inertial>
   </link>
 
-  <gazebo reference="camera">
-    <sensor type="camera" name="camera">
+  <gazebo reference="$(arg name)">
+    <sensor type="camera" name="$(arg name)_sensor">
       <update_rate>15.0</update_rate>
       <camera name="head">
         <horizontal_fov>2.0</horizontal_fov>
@@ -37,13 +42,16 @@
           <far>200.0</far>
         </clip>
       </camera>
-      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+      <plugin name="$(arg name)_controller" filename="libgazebo_ros_camera.so">
+        <ros>
+          <namespace>$(arg ros_namespace)</namespace>
+        </ros>
         <alwaysOn>true</alwaysOn>
         <updateRate>0.0</updateRate>
         <cameraName>camera</cameraName>
         <imageTopicName>image</imageTopicName>
         <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-        <frameName>camera</frameName>
+        <frameName>$(arg frame_name)</frameName>
         <hackBaseline>0.0</hackBaseline>
         <distortionK1>0.0</distortionK1>
         <distortionK2>0.0</distortionK2>
